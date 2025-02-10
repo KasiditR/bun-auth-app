@@ -25,7 +25,7 @@ ENV PATH="/root/.bun/bin:${PATH}"
 
 # Install dependencies using Bun
 COPY --link package.json . 
-RUN bun install --production=false
+RUN bun install
 
 # Copy application code
 COPY --link . .
