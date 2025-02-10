@@ -1,10 +1,9 @@
 # syntax = docker/dockerfile:1
 
-# Adjust BUN_VERSION as desired
-ARG BUN_VERSION=0.7.4
-FROM ghcr.io/oven-sh/bun:${BUN_VERSION} as base
+# Use a Node.js image (fallback to avoid GHCR issue)
+FROM node:20-alpine as base
 
-LABEL fly_launch_runtime="BunJS"
+LABEL fly_launch_runtime="NodeJS"
 
 # Set working directory
 WORKDIR /app
