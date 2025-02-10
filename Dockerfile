@@ -1,41 +1,42 @@
 # syntax = docker/dockerfile:1
 
-# Adjust NODE_VERSION as desired
-ARG NODE_VERSION=20.18.0
-FROM node:${NODE_VERSION}-slim as base
+# Adjust BUN_VERSION as desired
+ARG BUN_VERSION=0.7.4
+FROM ghcr.io/oven-sh/bun:${BUN_VERSION} as base
 
-LABEL fly_launch_runtime="NodeJS"
+LABEL fly_launch_runtime="BunJS"
 
-# NodeJS app lives here
+# Set working directory
 WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV=production
 
-
 # Throw-away build stage to reduce size of final image
 FROM base as build
 
-# Install packages needed to build node modules
+# Install necessary system dependencies
 RUN apt-get update -qq && \
-    apt-get install -y python-is-python3 pkg-config build-essential 
+    apt-get install -y python-is-python3 pkg-config build-essential
 
-# Install node modules
-COPY --link package.json .
-RUN npm install --production=false
+# Install dependencies using Bun
+COPY --link package.json . 
+RUN bun install --production=false
 
 # Copy application code
 COPY --link . .
 
+# Build the app (compile TypeScript to JavaScript)
+RUN bun build src/index.ts --outdir=dist
+
 # Remove development dependencies
-RUN npm prune --production
+RUN bun prune --production
 
-
-# Final stage for app image
+# Final stage for the app image
 FROM base
 
-# Copy built application
+# Copy built application from build stage
 COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
-CMD [ "npm", "run", "start" ]
+CMD ["bun", "run", "dist/index.js"]
