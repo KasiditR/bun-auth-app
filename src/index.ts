@@ -6,6 +6,9 @@ import { cors } from '@elysiajs/cors';
 const app = new Elysia();
 app.use(cors())
 app.use(swagger());
+app.get('/',() => {
+  return "Hello There"
+})
 authsController(app);
 app.listen(8080);
 console.log(
