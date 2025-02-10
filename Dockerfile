@@ -15,8 +15,9 @@ ENV NODE_ENV=production
 FROM base as build
 
 # Install necessary system dependencies
-RUN apk update && apk add --no-cache python3 pkgconfig build-base
+RUN apk update && apk add --no-cache python3 pkgconfig build-base curl bash
 
+# Install bun
 RUN curl -fsSL https://bun.sh/install | bash
 
 # Ensure bun is available in the PATH
