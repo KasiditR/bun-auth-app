@@ -31,7 +31,7 @@ RUN bun install
 COPY --link . .
 
 # Build the app (compile TypeScript to JavaScript)
-RUN bun build src/index.ts --outdir=dist
+RUN bun run build
 
 # Final stage for the app image
 FROM base
@@ -40,4 +40,4 @@ FROM base
 COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
-CMD ["bun", "run", "dist/index.js"]
+CMD ["bun", "run", "start"]
