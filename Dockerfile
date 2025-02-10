@@ -33,9 +33,6 @@ COPY --link . .
 # Build the app (compile TypeScript to JavaScript)
 RUN bun build src/index.ts --outdir=dist
 
-# Remove development dependencies
-RUN bun prune --production
-
 # Final stage for the app image
 FROM base
 
