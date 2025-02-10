@@ -15,8 +15,7 @@ ENV NODE_ENV=production
 FROM base as build
 
 # Install necessary system dependencies
-RUN apt-get update -qq && \
-    apt-get install -y python-is-python3 pkg-config build-essential
+RUN apk update && apk add --no-cache python3 pkgconfig build-base
 
 # Install dependencies using Bun
 COPY --link package.json . 
