@@ -17,6 +17,11 @@ FROM base as build
 # Install necessary system dependencies
 RUN apk update && apk add --no-cache python3 pkgconfig build-base
 
+RUN curl -fsSL https://bun.sh/install | bash
+
+# Ensure bun is available in the PATH
+ENV PATH="/root/.bun/bin:${PATH}"
+
 # Install dependencies using Bun
 COPY --link package.json . 
 RUN bun install --production=false
