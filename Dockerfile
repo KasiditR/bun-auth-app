@@ -1,43 +1,48 @@
 # syntax = docker/dockerfile:1
 
-# Use a Node.js image (fallback to avoid GHCR issue)
-FROM node:20-alpine as base
+# Adjust BUN_VERSION as desired
+ARG BUN_VERSION=1.2.2
+FROM oven/bun:${BUN_VERSION}-slim AS base
 
-LABEL fly_launch_runtime="NodeJS"
+LABEL fly_launch_runtime="Bun"
 
-# Set working directory
+# Bun app lives here
 WORKDIR /app
 
 # Set production environment
-ENV NODE_ENV=production
+ENV NODE_ENV="production"
+
 
 # Throw-away build stage to reduce size of final image
-FROM base as build
+FROM base AS build
 
-# Install necessary system dependencies
-RUN apk update && apk add --no-cache python3 pkgconfig build-base curl bash
+# Install packages needed to build node modules
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
 
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash
-
-# Ensure bun is available in the PATH
-ENV PATH="/root/.bun/bin:${PATH}"
-
-# Install dependencies using Bun
-COPY --link package.json . 
+# Install node modules
+COPY bun.lock package-lock.json package.json ./
 RUN bun install
 
 # Copy application code
-COPY --link . .
+COPY . .
 
-# Build the app (compile TypeScript to JavaScript)
+# Build application
 RUN bun run build
 
-# Final stage for the app image
+# Remove development dependencies
+RUN rm -rf node_modules && \
+    bun install --ci
+
+
+# Final stage for app image
 FROM base
 
-# Copy built application from build stage
+# Copy built application
 COPY --from=build /app /app
 
+COPY --from=build /app/.env /app/.env
+
 # Start the server by default, this can be overwritten at runtime
-CMD ["bun", "run", "start"]
+EXPOSE 8080
+CMD [ "bun", "run", "start" ]
